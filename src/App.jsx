@@ -1,40 +1,40 @@
-import { useEffect, useState } from "react";
-import { connect } from "react-redux";
-import { Col } from "antd";
-import Searcher from "./components/Searcher";
-import PokemonList from "./components/PokemonList";
-import { getPokemon } from "./api";
-import { setPokemons as setPokemonsActions } from "./actions";
-import logo from "./statics/logo.svg";
-import "./App.css";
+import { useEffect } from 'react';
+import { Col, Spin } from 'antd';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import Searcher from './components/Searcher';
+import PokemonList from './components/PokemonList';
+import logo from './statics/logo.svg';
+import { fetchPokemonsWithDetails } from './slices/dataSlice';
+import './App.css';
 
-function App({ pokemons, setPokemons }) {
-  console.log("pokemons", pokemons);
+function App() {
+  const pokemons = useSelector((state) => state.data.pokemons, shallowEqual);
+
+  const loading = useSelector((state) => state.ui.loading);
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    const fetchPokemons = async () => {
-      const pokemonsRes = await getPokemon();
-      setPokemons(pokemonsRes);
-    };
-    fetchPokemons();
+    dispatch(fetchPokemonsWithDetails());
   }, []);
+
   return (
-    <div className="App">
+    <div className='App'>
       <Col span={4} offset={10}>
-        <img src={logo} alt="Pokedux" />
+        <img src={logo} alt='Pokedux' />
       </Col>
       <Col span={8} offset={8}>
         <Searcher />
       </Col>
-      <PokemonList pokemons={pokemons} />
+      {loading ? (
+        <Col offset={12}>
+          <Spin spinning size='large' />
+        </Col>
+      ) : (
+        <PokemonList pokemons={pokemons} />
+      )}
     </div>
   );
 }
 
-const mapStateToProps = (state) => ({
-  pokemons: state.pokemons,
-});
-const mapDispatchToProps = (dispatch) => ({
-  setPokemons: (value) => dispatch(setPokemonsActions(value)),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;
